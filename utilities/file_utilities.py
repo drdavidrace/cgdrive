@@ -30,7 +30,7 @@ def create_file_name(dir_name=None, file_name=None, create_dir=False):
     if not create_dir:
         return file_name
     else:
-    dir_exists = os.path.isdir(dir_name)
+        dir_exists = os.path.isdir(dir_name)
         if dir_exists:
             return file_name
         else:

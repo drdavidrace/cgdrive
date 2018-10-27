@@ -18,31 +18,28 @@ from pydrive.drive import GoogleDrive
 #defaults
 current_pid = os.getpid()
 home = os.environ['HOME']
-cred_dir = ".gdrive"
-cred_name = "mycreds.txt"
+info_dir = ".gdrive"
+cred_file_name = "mycreds.txt"
 global_lock_name = "global_lock"
 process_lock = "process_lock"
-cred_file_dir = os.path.join(home,*[cred_dir])
-process_lock_file = os.path.join(cred_file_dir,''.join(["{:d}".format(current_pid),".",process_lock]))
+gwd_file_name = "gwd"
+session_file_name = "session"
+info_file_dir = os.path.join(home,*[info_dir])
+process_lock_file = os.path.join(,''.join(["{:d}".format(current_pid),".",process_lock]))
 max_lock_retries = 10
 #  Check the cred file path
-if not os.path.isdir(cred_file_dir):
+if not os.path.isdir(info_file_dir):
     try:
-        path = Path(cred_file_dir)
+        path = Path(info_file_dir)
         path.mkdir(parents=True, exist_ok=True)
     except Exception as e:
-        raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), cred_file_dir)
-#define cred_file_dir
-cred_file = os.path.join(cred_file_dir,cred_name)
+        raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), info_file_dir)
+#define info_file_dir
+cred_file = os.path.join(info_file_dir,cred_file_name)
 # Check the global lock file
-global_lock_file = os.path.join(cred_file_dir,*[global_lock_name])
-# if not os.path.isdir(global_lock_file):
-#     try:
-#         path = Path(global_lock_file)
-#         path.touch(exist_ok=True)
-#     except Exception as e:
-#         raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), global_lock_file)
-#Check the authentication
+global_lock_file = os.path.join(info_file_dir,*[global_lock_name])
+
+#
 def check_authentication():
     global cred_file
     gauth = GoogleAuth()
