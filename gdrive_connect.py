@@ -12,6 +12,7 @@ import errno
 import warnings
 from pprint import pprint, pformat
 from pathlib import Path
+import argparse
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 #defaults
@@ -98,7 +99,9 @@ def release_process_lock():
 
 if __name__ == "__main__":
     check_authentication()
-    obtained_lock = get_process_lock()
-    pprint(obtained_lock)
-
-    pprint(release_process_lock())
+    parser = argparse.ArgumentParser(description='Manage the data transfer between the local VM and a Google Drive')
+    parser.add_argument('subcommand',type=str,metavar='subcommand')
+    parser.add_argument('subcommand_arg',type=str,default=None,metavar='subcommand argument')
+    args = parser.parse_args()
+    pprint(subcommand)
+    pprint(subcommand_arg)
