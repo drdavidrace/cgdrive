@@ -4,6 +4,7 @@ simple but also check the quality of the implementation as it proceeds
 '''
 import os
 from pathlib import Path
+import errno
 #
 def create_file_name(dir_name=None, file_name=None, create_dir=False):
     '''
@@ -17,24 +18,35 @@ def create_file_name(dir_name=None, file_name=None, create_dir=False):
     Inputs:
     dir_name - The name of a directory.  This is checked for existance.
     file_name - The name of the file
+    check_dir - Check if the dirctory is a real directory
     create_dir - The directory is created if it doesn't exist if this is True
 
     Outputs:
     None if the directory doesn't exist and create_dir == True
 
-    filename in other cases
+    full path name in other cases
     '''
     assert dir_name is not None
     assert file_name is not None
+
     file_name = os.path.join(dir_name, file_name)
     if not create_dir:
-        return file_name
+        normpath = os.path.normpath(file_name)
+        full_path = os.path.realpath(normpath)
+        return full_path
     else:
         dir_exists = os.path.isdir(dir_name)
+        normpath = os.path.normpath(file_name)
+        full_path = os.path.realpath(normpath)
         if dir_exists:
-            return file_name
+            return full_path
         else:
-            return None
+            try:
+                mkpath = os.path.dirname(full_path)
+                os.makedirs(mkpath,exist_ok=True)
+            except Exception as e:
+                raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), full_path)
+            return full_path
 #
 def create_file(file_name=None, overwrite=False, create_dir=False):
     '''
@@ -42,7 +54,7 @@ def create_file(file_name=None, overwrite=False, create_dir=False):
     path is relative to the cwd or a full path
 
     Inputs:
-    file_name:  This is the file name to create
+    file_name:  This is the file name to create, must be a full file name
     overwrite:  If True overwrite an existing file if it exists; otherwise, do not
     overwrite
     create_dir:  If True, create any directory leaves as necessary; otherwise
