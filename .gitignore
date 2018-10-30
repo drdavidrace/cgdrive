@@ -1,0 +1,5 @@
+client_secrets.*
+*_old.*
+commands/__pycache__
+test/__pycache__
+utilities/__pycache__

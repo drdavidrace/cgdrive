@@ -1,5 +1,7 @@
 '''
-Tests for the file utilities
+Tests for the file utilities.
+This is fundamentally a command line set of tests, but a number of the 
+internals are also tested.
 '''
 print("Start at Top")
 #Test Imports
