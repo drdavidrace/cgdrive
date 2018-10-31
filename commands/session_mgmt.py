@@ -92,4 +92,4 @@ def init_session(session_file=None, max_time=None):
         f.write("{:d}\n".format(max_time))
         f.write("{:s}\n".format(secrets_glob[choice]))
         f.close()
-    return sess_file
+    return True

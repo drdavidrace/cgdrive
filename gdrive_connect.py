@@ -20,16 +20,17 @@ import warnings
 from pprint import pprint, pformat
 from pathlib import Path
 import argparse
-import pydrive
-from pydrive.auth import GoogleAuth
-from pydrive.drive import GoogleDrive
+
 #Code specific Imports
 import utilities.file_utilities as flu 
 import utilities.lock_mgmt as lm
+import utilities.authentication_mgmt as am
 import commands.session_mgmt as sm
+import commands.arg_parse as ap
 #defaults
 source_path, _ = os.path.split(flu.clean_path(sys.argv[0]))
 current_pid = os.getpid()
+program_name = sys.argv[0]
 home = os.environ['HOME']
 info_dir = ".gdrive"
 cred_file_name = "mycreds.txt"
@@ -53,40 +54,52 @@ _session_file_ = flu.create_file_name(_info_file_dir_, session_file_name, create
 #File for google drive working directory information
 _gwd_file_ = flu.create_file_name(_info_file_dir_, gwd_file_name, create_dir=True)
 _client_secrets_file_ = flu.create_file_name(source_path, client_secrets_name)
+#
+def print_info_dir():
+    global info_dir
+    print("Information Directory is {:s}".format(info_dir))
+def subcommand_message():
+    sc_message = ''.join(['The valid subcommands are session, ...',
+    '\n    There is only one subcommand allowed per call.',
+    '\n    This is designed to be single threaded and does not queue subcommands.'])
+    return sc_message
 
-def check_authentication():
-    global _cred_file_
-    gauth = GoogleAuth()
-    # Try to load saved client credentials
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        gauth.LoadCredentialsFile(_cred_file_)
-    if gauth.credentials is None:
-        # Authenticate if they're not there
-        gauth.LocalWebserverAuth()
-    elif gauth.access_token_expired:
-        # Refresh them if expired
-        gauth.Refresh()
-    else:
-        # Initialize the saved creds
-        gauth.Authorize()
-    # Save the current credentials to a file
-    gauth.SaveCredentialsFile(_cred_file_)
+def subcommand_arg_message():
+    sca_message = ''.join(
+        ["The valid arguments for each subcommand are:",
+        "\n    session:  clean, superclean, init"])
+    return sca_message
+
 
 
 if __name__ == "__main__":
-    check_authentication()
-    a_parser = argparse.ArgumentParser(description='Manage the data transfer between the local VM and a Google Drive')
-    a_parser.add_argument('subcommand',nargs='?',type=str,metavar='subcommand')
-    a_parser.add_argument('subcommand_arg',nargs='?',type=str,default=None,metavar='subcommand argument')
+    am.check_authentication(_cred_file_)
+    ab = "ab"
+
+    a_parser = argparse.ArgumentParser(
+        description='Manage the data transfer between the local VM and a Google Drive',
+        formatter_class=argparse.RawTextHelpFormatter)
+    a_parser.add_argument(
+        'subcommand',nargs='?',type=str,metavar='subcommand',default=None,
+        help="{:s}".format(subcommand_message()))
+    a_parser.add_argument(
+        'subcommand_arg',nargs='?',type=str,default=None,
+        metavar='subcommand argument', help=subcommand_arg_message())
     args = a_parser.parse_args()
-    pprint(args)
-    pprint(subcommand)
-    pprint(subcommand_arg)
+    if(args.subcommand is None):
+        a_parser.print_help()
+        print("There must be a subcommand, exitting!")
+        exit(1)
+    subcommand = args.subcommand
+    subcommand_arg = args.subcommand_arg
     #Initialize session
-    pprint(type(max_session_time))
-    res = sm.init_session(session_file=_session_file_,max_time=max_session_time)
-    pprint(res)
+    valid_command, command_status = ap.arg_parse(
+        subcommand, subcommand_arg,
+        infor_file_dir=_info_file_dir_,
+        session_file=_session_file_,max_time=max_session_time)
+    print("Valid Command ? {}".format(valid_command))
+    print("Command Status {}".format(command_status))
+    
     is_valid_session = sm.check_valid_session(info_file_dir=_info_file_dir_,
     cred_file=_cred_file_, 
     session_file=_session_file_)
