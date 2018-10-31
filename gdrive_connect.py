@@ -8,6 +8,9 @@ moving data between a VM and their own Google Drive.
 Comment on naming conventions:
 (1)  For files, use <file name>_name for the short name and <file name> for the full path name
 (2)  _<variable name>_ is used for the variables within a file that are passed and used else where
+
+Threads support:  The threads support is designed to be single threaded since this is a command
+line utility 
 '''
 #General Imports
 import os, sys
@@ -50,10 +53,7 @@ _session_file_ = flu.create_file_name(_info_file_dir_, session_file_name, create
 #File for google drive working directory information
 _gwd_file_ = flu.create_file_name(_info_file_dir_, gwd_file_name, create_dir=True)
 _client_secrets_file_ = flu.create_file_name(source_path, client_secrets_name)
-#
-#  This is designed to be single threaded since it is command line oriented, in particular
-#  the google drive current working directory really must be single threaded
-#
+
 def check_authentication():
     global _cred_file_
     gauth = GoogleAuth()
