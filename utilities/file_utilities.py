@@ -51,7 +51,7 @@ def create_file_name(dir_name=None, file_name=None, create_dir=False):
                 mkpath = os.path.dirname(full_path)
                 os.makedirs(mkpath,exist_ok=True)
             except Exception as e:
-                raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), full_path)
+                raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), ''.join([full_path,e]))
             return full_path
 #
 def create_process_lockfile_name(dir_name=None, file_name=None, pid=None, create_dir=False):
@@ -98,7 +98,7 @@ def create_process_lockfile_name(dir_name=None, file_name=None, pid=None, create
                 mkpath = os.path.dirname(full_path)
                 os.makedirs(mkpath,exist_ok=True)
             except Exception as e:
-                raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), full_path)
+                raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), ''.join([full_path,e]))
             return full_path
 #
 def create_dir(dir_name=None, create_dir=True):
@@ -127,7 +127,7 @@ def create_dir(dir_name=None, create_dir=True):
             path = Path(dir_name)
             path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), dir_name)
+            raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), ''.join([dir_name,e]))
         return dir_name
 #
 def create_file(file_name=None, overwrite=False, create_dir=False):
@@ -160,7 +160,7 @@ def create_file(file_name=None, overwrite=False, create_dir=False):
             path = Path(dir_name)
             path.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), dir_name)
+            raise OSError(errno.ENOENT, os.strerror(errno.ENOENT), ''.join([dir_name,e]))
     real_file_name = os.path.join(dir_name, f_name)
     if not overwrite:
         if os.path.isfile(real_file_name):
