@@ -3,3 +3,4 @@ client_secrets.*
 commands/__pycache__
 test/__pycache__
 utilities/__pycache__
+.vscode/*
