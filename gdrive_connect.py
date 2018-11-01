@@ -95,7 +95,6 @@ if __name__ == "__main__":
       a_parser.print_help()
       print("There must be a subcommand, exitting!")
       exit(1)
-    pprint(args.verbose)
     subcommand = args.subcommand
     action = args.action
     verbose = args.verbose
