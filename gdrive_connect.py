@@ -103,10 +103,12 @@ if __name__ == "__main__":
     valid_command, scommand, saction = ap.are_valid_args(
       subcommand=subcommand, action=action,verbose=True)
     if verbose:
+      pprint(args)
       print("File {}".format('gdrive_connect.py'))
       print("Valid Command ? {}".format(valid_command))
       print("Command Status {}".format(scommand))
       print("Action Status {}".format(saction))
+
     if valid_command:
       found_valid, command_status = cmgr.exe(
         subcommand = scommand, action=saction,

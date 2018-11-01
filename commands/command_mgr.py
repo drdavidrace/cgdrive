@@ -22,6 +22,7 @@ def exe(
   subcommand - The command to execute, this must be preprocessed through ap
   subcommand_action - the action to perform, this must be preprocessed through ap
 
+  verbose - The flag to output additional process information
   '''
   assert subcommand is not None
   assert action is not None
