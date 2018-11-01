@@ -1,0 +1,54 @@
+'''
+The commands in this file execute the subcommand/subcommand action combination
+'''
+import sys
+import utilities.file_utilities as flu 
+import utilities.lock_mgmt as lm
+import utilities.authentication_mgmt as am
+import commands.session_mgmt as sm
+import commands.arg_parse as ap
+import commands.command_const as cc
+from pprint import pprint
+cmgr_file_name = "command_mgr.py"
+def exe(
+  subcommand = None, action=None,
+  info_file_dir=None,
+  session_file=None,max_time=None,
+  verbose=False):
+  '''
+  Purpose:  execute the subcommand and action
+
+  Inputs:
+  subcommand - The command to execute, this must be preprocessed through ap
+  subcommand_action - the action to perform, this must be preprocessed through ap
+
+  '''
+  assert subcommand is not None
+  assert action is not None
+  assert isinstance(subcommand,str)
+  assert isinstance(action,str)
+
+  found_valid = False
+  command_success = False
+  found_valid, scommand, saction = ap.are_valid_args(
+    subcommand=subcommand,
+    action=action)
+  if verbose:
+    sys.stderr.write("====File {}====\n".format(cmgr_file_name))
+    sys.stderr.write("Found Valid ? {}\n".format(found_valid))
+    sys.stderr.write("subcommand {}\n".format(scommand))
+    sys.stderr.write("action {}\n".format(saction))
+
+  if found_valid:
+    if verbose:
+      sys.stderr.write("Inside valid command action\n")
+    if scommand == cc.sess_command:
+      assert isinstance(session_file,str)
+      assert isinstance(max_time,int)
+      assert max_time > 0
+      if verbose:
+        print("Subcommand {:s}".format(scommand))
+        print("Subcommand Arg {:s}".format(saction))
+      if saction == 'IN':
+        command_success = sm.init_session(session_file=session_file,max_time=max_time)
+  return found_valid, command_success

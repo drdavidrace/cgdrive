@@ -25,8 +25,8 @@ import argparse
 import utilities.file_utilities as flu 
 import utilities.lock_mgmt as lm
 import utilities.authentication_mgmt as am
-import commands.session_mgmt as sm
 import commands.arg_parse as ap
+import commands.command_mgr as cmgr
 #defaults
 source_path, _ = os.path.split(flu.clean_path(sys.argv[0]))
 current_pid = os.getpid()
@@ -41,8 +41,9 @@ gwd_file_name = "gwd" #google drive working directory info
 session_file_name = "session" #session information
 max_lock_retries = 1
 max_session_time = 180 #minutes
+verbose = False
 subcommand = None
-subcommand_arg = None
+action = None
 #create information directory file names
 _info_dir_name_ = flu.create_file_name(home,info_dir)
 _info_file_dir_ = flu.create_dir(_info_dir_name_)
@@ -64,7 +65,7 @@ def subcommand_message():
     '\n    This is designed to be single threaded and does not queue subcommands.'])
     return sc_message
 
-def subcommand_arg_message():
+def action_message():
     sca_message = ''.join(
         ["The valid arguments for each subcommand are:",
         "\n    session:  clean, superclean, init"])
@@ -77,32 +78,41 @@ if __name__ == "__main__":
     ab = "ab"
 
     a_parser = argparse.ArgumentParser(
-        description='Manage the data transfer between the local VM and a Google Drive',
-        formatter_class=argparse.RawTextHelpFormatter)
+      description='Manage the data transfer between the local VM and a Google Drive',
+      formatter_class=argparse.RawTextHelpFormatter)
     a_parser.add_argument(
-        'subcommand',nargs='?',type=str,metavar='subcommand',default=None,
-        help="{:s}".format(subcommand_message()))
+      'subcommand',nargs='?',type=str,metavar='subcommand',default=None,
+      help="{:s}".format(subcommand_message()))
     a_parser.add_argument(
-        'subcommand_arg',nargs='?',type=str,default=None,
-        metavar='subcommand argument', help=subcommand_arg_message())
+      'action',nargs='?',type=str,default=None,
+      metavar='action', help=action_message())
+    a_parser.add_argument(
+      '-v','--verbose',action='store_true',default=False,
+      help="{:s}".format("Turn on the verbose information")
+    )
     args = a_parser.parse_args()
     if(args.subcommand is None):
-        a_parser.print_help()
-        print("There must be a subcommand, exitting!")
-        exit(1)
+      a_parser.print_help()
+      print("There must be a subcommand, exitting!")
+      exit(1)
+    pprint(args.verbose)
     subcommand = args.subcommand
-    subcommand_arg = args.subcommand_arg
+    action = args.action
+    verbose = args.verbose
     #Initialize session
-    valid_command, command_status = ap.arg_parse(
-        subcommand, subcommand_arg,
-        infor_file_dir=_info_file_dir_,
-        session_file=_session_file_,max_time=max_session_time)
-    print("Valid Command ? {}".format(valid_command))
-    print("Command Status {}".format(command_status))
-    
-    is_valid_session = sm.check_valid_session(info_file_dir=_info_file_dir_,
-    cred_file=_cred_file_, 
-    session_file=_session_file_)
-
-    if not is_valid_session:
-        pprint("Invalid session - Run clean and init")
+    valid_command, scommand, saction = ap.are_valid_args(
+      subcommand=subcommand, action=action,verbose=True)
+    if verbose:
+      print("File {}".format('gdrive_connect.py'))
+      print("Valid Command ? {}".format(valid_command))
+      print("Command Status {}".format(scommand))
+      print("Action Status {}".format(saction))
+    if valid_command:
+      found_valid, command_status = cmgr.exe(
+        subcommand = scommand, action=saction,
+        info_file_dir=_info_file_dir_,
+        session_file=_session_file_,max_time=max_session_time,
+        verbose=verbose)
+    # is_valid_session = sm.check_valid_session(info_file_dir=_info_file_dir_,
+    # cred_file=_cred_file_, 
+    # session_file=_session_file_)
