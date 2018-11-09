@@ -20,7 +20,6 @@ import time
 import errno
 import warnings
 from pprint import pprint, pformat
-from pathlib import Path
 import argparse
 
 #Code specific Imports
@@ -30,34 +29,26 @@ import utilities.authentication_mgmt as am
 import commands.arg_parse as ap
 import commands.command_mgr as cmgr
 #defaults
-g_names = gn.names()
+gnames = gn.names()
 verbose = False
 subcommand = None
 action = None
-#create information directory file names
-_process_lock_file_ = g_names.process_lock_file()
-_global_lock_file_ = g_names.global_lock_file()
-# Session Information
-_session_file_ = g_names.session_file()
-#File for google drive working directory information
-_gwd_file_ = g_names.gwd_file()
-_client_secrets_file_ = g_names.client_secrets_file()
 #
 if __name__ == "__main__":
   '''
   This is the main driver for cgdrive.
   '''
-  am.check_authentication(g_names.cred_file())
+  am.check_authentication(gnames.cred_file())
 
   a_parser = argparse.ArgumentParser(
     description='Manage the data transfer between the local VM and a Google Drive',
     formatter_class=argparse.RawTextHelpFormatter)
   a_parser.add_argument(
     'subcommand',nargs='?',type=str,metavar='subcommand',default=None,
-    help=g_names.get_subcommand_message())
+    help=gnames.get_subcommand_message())
   a_parser.add_argument(
     'action',nargs='?',type=str,default=None,
-    metavar='action', help=g_names.get_action_message())
+    metavar='action', help=gnames.get_action_message())
   a_parser.add_argument(
     '-v','--verbose',action='store_true',default=False,
     help="{:s}".format("Turn on the verbose information")
@@ -83,7 +74,4 @@ if __name__ == "__main__":
   if valid_command:
     found_valid, command_status = cmgr.exe(
       subcommand = scommand, action=saction,
-      g_names=g_names, verbose=verbose)
-    # is_valid_session = sm.check_valid_session(info_file_dir=_info_file_dir_,
-    # cred_file=_cred_file_, 
-    # session_file=_session_file_)
+      g_names = gnames, verbose=verbose)
