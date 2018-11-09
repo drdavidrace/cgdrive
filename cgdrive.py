@@ -76,6 +76,9 @@ def action_message():
 
 
 if __name__ == "__main__":
+  '''
+  This is the main driver for cgdrive.
+  '''
     am.check_authentication(_cred_file_)
     ab = "ab"
 
