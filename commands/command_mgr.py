@@ -43,13 +43,44 @@ def exe(
       sys.stderr.write("Inside valid command action\n")
     if scommand == cc.sess_command:
       session_file = g_names.session_file()
-      max_time = g_names.max_session_time
       assert isinstance(session_file,str)
-      assert isinstance(max_time,int)
-      assert max_time > 0
       if verbose:
         print("Subcommand {:s}".format(scommand))
         print("Subcommand Arg {:s}".format(saction))
       if saction == 'IN':
-        command_success = sm.init_session(session_file=session_file,max_time=max_time)
+        max_time = g_names.max_session_time
+        assert isinstance(max_time,int)
+        assert max_time > 0
+        cred_file = g_names.cred_file()
+        assert isinstance(cred_file,str)
+        am.check_authentication(cred_file)
+        gwd_file = g_names.gwd_file()
+        command_success = sm.init_session(
+          session_file=session_file,gwd_file=gwd_file, max_time=max_time)
+      elif saction == 'CL':
+        gwd_file = g_names.gwd_file()
+        assert isinstance(gwd_file, str)
+        command_success = sm.clean_session(
+          session_file=session_file, gwd_file=gwd_file, are_you_sure=True)
+      elif saction == 'SU':
+        gwd_file = g_names.gwd_file()
+        cred_file = g_names.cred_file()
+        assert isinstance(gwd_file, str)
+        assert isinstance(cred_file, str)
+        try:
+          choice = str(input("Are you sure you want to superclean your session.\nThis removes the creditial file [y|n]:"))
+          m_choice = choice.upper()[0]
+          if m_choice not in 'NY':
+            raise ValueError("Choice must be in [n|y|N|Y]")
+        except ValueError:
+          raise ValueError("Choice must be in [n|y|N|Y]")
+        if m_choice in 'yY':
+          command_success = sm.super_clean_session(
+            cred_file=cred_file, session_file=session_file, gwd_file=gwd_file,
+            are_you_sure=True
+          )
+      elif saction == 'PR':
+        command_success = sm.print_session_information(global_names=g_names)
+      else:
+        command_success = False
   return found_valid, command_success

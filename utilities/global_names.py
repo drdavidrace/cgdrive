@@ -21,6 +21,7 @@ class names:
     self.session_file_name = "session" #session information
     self.max_lock_retries = 1
     self.max_session_time = 180 #minutes
+    self.info_file_dir()
   #Get for common names
   def info_dir_name(self):
     return flu.create_file_name(self.home,self.info_dir)
