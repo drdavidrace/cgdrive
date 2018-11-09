@@ -12,15 +12,13 @@ from pprint import pprint
 cmgr_file_name = "command_mgr.py"
 def exe(
   subcommand = None, action=None,
-  info_file_dir=None,
-  session_file=None,max_time=None,
-  verbose=False):
+  g_names=None, verbose=False):
   '''
   Purpose:  execute the subcommand and action
 
   Inputs:
   subcommand - The command to execute, this must be preprocessed through ap
-  subcommand_action - the action to perform, this must be preprocessed through ap
+  action - the action to perform, this must be preprocessed through ap
 
   verbose - The flag to output additional process information
   '''
@@ -44,6 +42,8 @@ def exe(
     if verbose:
       sys.stderr.write("Inside valid command action\n")
     if scommand == cc.sess_command:
+      session_file = g_names.session_file()
+      max_time = g_names.max_session_time
       assert isinstance(session_file,str)
       assert isinstance(max_time,int)
       assert max_time > 0
