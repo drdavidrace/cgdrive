@@ -12,7 +12,7 @@ from pprint import pprint
 cmgr_file_name = "command_mgr.py"
 def exe(
   subcommand = None, action=None,
-  g_names=None, verbose=False):
+  g_names=None, verbose=False): 
   '''
   Purpose:  execute the subcommand and action
 
@@ -24,6 +24,7 @@ def exe(
   '''
   assert subcommand is not None
   assert action is not None
+  assert g_names is not None
   assert isinstance(subcommand,str)
   assert isinstance(action,str)
 
