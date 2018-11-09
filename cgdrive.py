@@ -10,7 +10,9 @@ Comment on naming conventions:
 (2)  _<variable name>_ is used for the variables within a file that are passed and used else where
 
 Threads support:  The threads support is designed to be single threaded since this is a command
-line utility 
+line utility.  The included locking mechanism only works within a single computer/VM; therefore, 
+using the utility on multiple VMs concurrently will likely produce unstable results. 
+
 '''
 #General Imports
 import os, sys
