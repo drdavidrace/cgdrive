@@ -31,8 +31,7 @@ def exe(
   found_valid = False
   command_success = False
   found_valid, scommand, saction = ap.are_valid_args(
-    subcommand=subcommand,
-    action=action)
+    subcommand=subcommand,action=action)
   if verbose:
     sys.stderr.write("====File {}====\n".format(cmgr_file_name))
     sys.stderr.write("Found Valid ? {}\n".format(found_valid))
@@ -43,45 +42,55 @@ def exe(
     if verbose:
       sys.stderr.write("Inside valid command action\n")
     if scommand == cc.sess_command:
-      session_file = g_names.session_file()
-      assert isinstance(session_file,str)
-      if verbose:
-        print("Subcommand {:s}".format(scommand))
-        print("Subcommand Arg {:s}".format(saction))
-      if saction == 'IN':
-        max_time = g_names.max_session_time
-        assert isinstance(max_time,int)
-        assert max_time > 0
-        cred_file = g_names.cred_file()
-        assert isinstance(cred_file,str)
-        am.check_authentication(cred_file)
-        gwd_file = g_names.gwd_file()
-        command_success = sm.init_session(
-          session_file=session_file,gwd_file=gwd_file, max_time=max_time)
-      elif saction == 'CL':
-        gwd_file = g_names.gwd_file()
-        assert isinstance(gwd_file, str)
-        command_success = sm.clean_session(
-          session_file=session_file, gwd_file=gwd_file, are_you_sure=True)
-      elif saction == 'SU':
-        gwd_file = g_names.gwd_file()
-        cred_file = g_names.cred_file()
-        assert isinstance(gwd_file, str)
-        assert isinstance(cred_file, str)
-        try:
-          choice = str(input("Are you sure you want to superclean your session.\nThis removes the creditial file [y|n]:"))
-          m_choice = choice.upper()[0]
-          if m_choice not in 'NY':
-            raise ValueError("Choice must be in [n|y|N|Y]")
-        except ValueError:
-          raise ValueError("Choice must be in [n|y|N|Y]")
-        if m_choice in 'yY':
-          command_success = sm.super_clean_session(
-            cred_file=cred_file, session_file=session_file, gwd_file=gwd_file,
-            are_you_sure=True
-          )
-      elif saction == 'PR':
-        command_success = sm.print_session_information(global_names=g_names)
-      else:
-        command_success = False
+      command_success = _sess_exe_(action=saction, global_names=g_names,
+      verbose=verbose)
+    else:
+      command_success = False
+  else:
+    command_success = False
   return found_valid, command_success
+#
+#  session command execution
+#
+def _sess_exe_(action=None, global_names=None, verbose=False):
+  session_file = global_names.session_file()
+  max_time = global_names.max_session_time
+  cred_file = global_names.cred_file()
+  gwd_file = global_names.gwd_file()
+  assert action is not None
+  assert session_file is not None
+  assert gwd_file is not None
+  assert cred_file is not None
+  assert isinstance(action, str)
+  assert isinstance(session_file, str)
+  assert isinstance(gwd_file, str)
+  assert isinstance(cred_file, str)
+  command_success = False
+  if action == 'IN':
+    assert max_time is not None
+    assert isinstance(max_time,int)
+    assert max_time > 0
+    am.check_authentication(cred_file)
+    command_success = sm.init_session(
+      session_file=session_file,gwd_file=gwd_file, max_time=max_time)
+  elif action == 'CL':
+    command_success = sm.clean_session(
+      session_file=session_file, gwd_file=gwd_file, are_you_sure=True)
+  elif action == 'SU':
+    try:
+      choice = str(input("Are you sure you want to superclean your session.\nThis removes the creditial file [y|n]:"))
+      m_choice = choice.upper()[0]
+      if m_choice not in 'NY':
+        raise ValueError("Choice must be in [n|y|N|Y]")
+    except ValueError:
+      raise ValueError("Choice must be in [n|y|N|Y]")
+    if m_choice in 'yY':
+      command_success = sm.super_clean_session(
+        cred_file=cred_file, session_file=session_file, 
+        gwd_file=gwd_file, are_you_sure=True
+      )
+  elif action == 'PR':
+    command_success = sm.print_session_information(global_names=global_names)
+  else:
+    command_success = False
+  return command_success
