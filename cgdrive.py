@@ -11,8 +11,8 @@ Comment on naming conventions:
 
 Threads support:  The threads support is designed to be single threaded since this is a command
 line utility.  The included locking mechanism only works within a single computer/VM; therefore, 
-using the utility on multiple VMs concurrently will likely produce unstable results. 
-
+using the utility on multiple VMs concurrently will likely produce unstable results. All commands are 
+wrapped within the single threaded lock management
 '''
 #General Imports
 import os, sys
@@ -54,24 +54,32 @@ if __name__ == "__main__":
     help="{:s}".format("Turn on the verbose information")
   )
   args = a_parser.parse_args()
-  if(args.subcommand is None):
-    a_parser.print_help()
-    print("There must be a subcommand, exitting!")
-    exit(1)
-  subcommand = args.subcommand
-  action = args.action
-  verbose = args.verbose
-  #Initialize session
-  valid_command, scommand, saction = ap.are_valid_args(
-    subcommand=subcommand, action=action,verbose=True)
-  if verbose:
-    pprint(args)
-    print("File {}".format('gdrive_connect.py'))
-    print("Valid Command ? {}".format(valid_command))
-    print("Command Status {}".format(scommand))
-    print("Action Status {}".format(saction))
+  #Get the process lock
+  process_lock_status = lm.get_process_lock(gnames=gnames,verbose=True)
+  if process_lock_status:
+    if(args.subcommand is None):
+      a_parser.print_help()
+      print("There must be a subcommand, exitting!")
+    else:
+      #At this point we assume that there is a subcommand and action; therefore,
+      #this is the starting point for wrapping the lock
 
-  if valid_command:
-    found_valid, command_status = cmgr.exe(
-      subcommand = scommand, action=saction,
-      g_names = gnames, verbose=verbose)
+      subcommand = args.subcommand
+      action = args.action
+      verbose = args.verbose
+      #Initialize session
+      valid_command, scommand, saction = ap.are_valid_args(
+        subcommand=subcommand, action=action,verbose=True)
+      if verbose:
+        pprint(args)
+        print("File {}".format('gdrive_connect.py'))
+        print("Valid Command ? {}".format(valid_command))
+        print("Command Status {}".format(scommand))
+        print("Action Status {}".format(saction))
+
+      if valid_command:
+        found_valid, command_status = cmgr.exe(
+          subcommand = scommand, action=saction,
+          g_names = gnames, verbose=verbose)
+  #remove lock
+  lm.release_process_lock(gnames=gnames)

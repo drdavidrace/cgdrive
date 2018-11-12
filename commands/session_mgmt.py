@@ -1,6 +1,6 @@
 '''
 These are the commands to manage the session
-The session is controlled by two time elements, the start of the session and the amount of timeself.
+The session is controlled by two time elements, the start of the session and the amount of time.
 These two values are stored in the session file within .gdrive
 '''
 import os

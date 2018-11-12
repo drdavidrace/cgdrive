@@ -1,10 +1,13 @@
 '''
 Tools to manage the google drive authentication process
+ http://pythonhosted.org/PyDrive/oauth.html#customizing-authentication-with-settings-yaml
 '''
+import os
 import warnings
 import pydrive
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
+from pprint import pprint
 def check_authentication(cred_file=None):
     '''
     Purpose:  This checks to verify that the creditionals file exists and that it is valid.
@@ -22,12 +25,14 @@ def check_authentication(cred_file=None):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         gauth.LoadCredentialsFile(cred_file)
+    pprint(gauth.credentials)
     if gauth.credentials is None:
         # Authenticate if they're not there
         gauth.LocalWebserverAuth()
     elif gauth.access_token_expired:
         # Refresh them if expired
-        gauth.Refresh()
+        os.remove(cred_file)
+        gauth.LocalWebserverAuth()
     else:
         # Initialize the saved creds
         gauth.Authorize()
