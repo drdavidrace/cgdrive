@@ -1,6 +1,8 @@
 '''
 gwd commands - gwd stands for google drive working directory
 
+This functionality is similar to the current working directory capability in Linux (i.e. the local VM)
+
 Since this functionality is between the current working directory in the local VM 
 and the google drive, we need a method to track the folder on the 
 google drive that is used for the transfers.  This is the functionality
@@ -12,72 +14,88 @@ from pprint import pprint, pformat
 from pydrive.drive import GoogleDrive
 import utilities.authentication_mgmt as am
 
-def getgwd(gnames=None,verbose=False):
+def getgwd(global_names=None,verbose=False):
   '''
   Purpose:  Get the google directory information for the google
   current working directory.
 
-  Inputs: gnames - the object of global names
+  Inputs: global_names - the object of global names
 
   Outputs:  the directory information, including
     name, ...
   '''
-  assert gnames is not None
-  gwd_name = _getgwd_(gnames=gnames)
+  assert global_names is not None
+  gwd_name = _getgwd_(global_names=global_names)
   #Check the google drive
-  myGDrive = _get_drive_(gnames=gnames)
-  gnames.myDrive = myGDrive
-  isConnected = _is_connected_(gnames)
+  myGDrive = _get_drive_(global_names=global_names)
+  global_names.myDrive = myGDrive
+  isConnected = _is_connected_(global_names)
   if verbose:
     print("The google drive connection status {}".format(isConnected))
   file_info = None
-  file_info = _get_file_metadata_(gnames=gnames,file_str=gwd_name)
+  file_info = _get_file_metadata_(global_names=global_names,file_str=gwd_name)
   if verbose:
     pprint(file_info)
   return file_info['full_name'], file_info['id']
-  
+def cd(global_names=None, new_dir=None, verbose=False):
+  '''
+  Purpose:  Change the google working directory
+
+  Inputs:
+  global_names - the global names object
+
+  new_dir - the change of directory.  This can be relative or absolute
+    NOTE:  We don't really expect the user to know the 'root' convention 
+    Google Drive
+    NOTE:  If new_dir is empty or '', then this is set back to root
+
+  Outputs:
+  The full path of the new working directory is written to ~/.gdrive/gwd
+  '''
+  return_value = False
+  return return_value
 #
 #  Private commands
 #
-def  _is_connected_(gnames=None):
+def  _is_connected_(global_names=None):
   '''
   This returns True if it is connected and False otherwise.
   #
   Inputs:
   -----------
-  gnames - the global information for this function
+  global_names - the global information for this function
   #
   Returns:
   --------
   True if connected and False otherwise
   '''
-  assert gnames is not None
-  return True if(_drive_about_(myDrive=gnames.myDrive)['kind'] == 'drive#about') else False
+  assert global_names is not None
+  return True if(_drive_about_(myDrive=global_names.myDrive)['kind'] == 'drive#about') else False
 #
-def _getgwd_(gnames=None,verbose=False):
+def _getgwd_(global_names=None,verbose=False):
   '''
   Purpose:  get the google working directory from the gwd_file
 
-  Inputs:  gnames - the global names object
+  Inputs:  global_names - the global names object
 
   Outputs:  The first line of the file gwd_file
   '''
-  assert gnames is not None
-  gwd_file = gnames.gwd_file()
+  assert global_names is not None
+  gwd_file = global_names.gwd_file()
   gwd_name = None
   with open(gwd_file,"r") as f:
     gwd_name = f.readline()
     gwd_name = gwd_name.strip()
     f.close()
   return gwd_name
-def _get_file_metadata_(gnames=None, file_str=None):
+def _get_file_metadata_(global_names=None, file_str=None):
   '''
   Purpose:
     Obtains the file meta data for a file pointed to by file_str.
 
   Inputs:
   ===========
-  gnames - the object with the gobal data for this capability
+  global_names - the object with the gobal data for this capability
   myDrive - the google drive object
   file_str:  The path name for the file of interest
   Outputs:
@@ -85,16 +103,16 @@ def _get_file_metadata_(gnames=None, file_str=None):
   None if there is an issue with the touching the file
   The entire metadata if the file is found
   '''
-  assert gnames is not None
+  assert global_names is not None
   assert file_str is not None
-  myDrive = gnames.myDrive
+  myDrive = global_names.myDrive
   ret_val = None
-  file_info = _find_file_id_(gnames=gnames,file_str=file_str)
+  file_info = _find_file_id_(global_names=global_names,file_str=file_str)
   if file_info:
-    drive_file = myDrive.CreateFile({'id': '{:s}'.format(file_info['id'])})
+    #drive_file = myDrive.CreateFile({'id': '{:s}'.format(file_info['id'])})
     ret_val = file_info
   return ret_val
-def _get_drive_(gnames=None, verbose=True):
+def _get_drive_(global_names=None, verbose=True):
   '''
   Purpose:  Return the pydrive.drive information
 
@@ -105,12 +123,12 @@ def _get_drive_(gnames=None, verbose=True):
   NOTE:  This doesn't use an object approach since the command line
   doesn't support maintaining objects.  Not overly efficient but okay
   '''
-  assert gnames is not None
+  assert global_names is not None
   gauth = None
-  if gnames.authentication is not None:
-    gauth = gnames.authentication
+  if global_names.authentication is not None:
+    gauth = global_names.authentication
   else:
-    gauth = am.check_authentication(cred_file=gnames.cred_file())
+    gauth = am.check_authentication(cred_file=global_names.cred_file())
   myGDrive = GoogleDrive(gauth)
   return myGDrive
 #
@@ -129,7 +147,7 @@ def _drive_about_(myDrive=None, verbose=True):
 #
 #  Find the file id for a file on GoogleDrive
 #
-def _find_file_id_(gnames=None, file_str=None):
+def _find_file_id_(global_names=None, file_str=None):
   '''
   This finds a file id for a file sent in by in_str
   Parameters
@@ -139,11 +157,11 @@ def _find_file_id_(gnames=None, file_str=None):
   =======
   A file id for a path or None
   '''
-  assert gnames is not None
+  assert global_names is not None
   assert file_str is not None
-  w_str = _build_full_path_(gnames=gnames, in_str=file_str)
-  file_struct = _build_path_structure_(gnames=gnames,in_str=w_str)
-  r_val = _traverse_structure_list_(gnames=gnames, in_struct=file_struct['path_array'])
+  w_str = _build_full_path_(global_names=global_names, in_str=file_str)
+  file_struct = _build_path_structure_(global_names=global_names,in_str=w_str)
+  r_val = _traverse_structure_list_(global_names=global_names, in_struct=file_struct['path_array'])
   p_val = r_val['file_result']
   ret_val = None
   if p_val:
@@ -152,7 +170,7 @@ def _find_file_id_(gnames=None, file_str=None):
     ret_val = {'full_name':r_val['full_name'], 'id': p_val[0]['id']}
   return ret_val
 #
-def _build_full_path_(gnames=None, in_str=None):
+def _build_full_path_(global_names=None, in_str=None):
   '''
   This builds a theoretical absolute GoogleDrive path
 
@@ -165,26 +183,26 @@ def _build_full_path_(gnames=None, in_str=None):
   ------
   An absolute path starting at 'root'
   '''
-  assert gnames is not None
+  assert global_names is not None
   assert in_str is not None
   ret_val = None
   if not in_str.strip():
-    ret_val = _getgwd_(gnames=gnames)
+    ret_val = _getgwd_(global_names=global_names)
   else:
     work_file_name = os.path.normpath(in_str.strip())
     if work_file_name[0] == '/':
       work_file_name = work_file_name[1:]
-    work_file_struct = _build_path_structure_(gnames=gnames,in_str=work_file_name)
+    work_file_struct = _build_path_structure_(global_names=global_names,in_str=work_file_name)
     if work_file_struct['path_array'][0] != 'root':
-      work_file_name = os.path.join(_getgwd_(gnames=gnames),work_file_name)
-    work_file_struct = _build_path_structure_(gnames=gnames,in_str=work_file_name)
+      work_file_name = os.path.join(_getgwd_(global_names=global_names),work_file_name)
+    work_file_struct = _build_path_structure_(global_names=global_names,in_str=work_file_name)
     if work_file_struct['path_array'][0] != 'root':
       raise FileNotFoundError('_build_full_path_ ' + 'path must begin with root ' + work_file_name)
     else:
       ret_val = os.path.normpath(work_file_name)
   return ret_val
 #
-def _build_path_structure_(gnames=None, in_str=None):
+def _build_path_structure_(global_names=None, in_str=None):
   '''
   This provides a consistent path build mechanism
 
@@ -199,7 +217,7 @@ def _build_path_structure_(gnames=None, in_str=None):
   WARNING:  The full name does not contain the following ending * if that is the last entry
 
   '''
-  assert gnames is not None
+  assert global_names is not None
   assert in_str is not None
   work_str = os.path.normpath(in_str)
   in_struct = []
@@ -216,16 +234,16 @@ def _build_path_structure_(gnames=None, in_str=None):
   else:
     t_struct = in_struct
   if not t_struct:
-    t_struct = _build_path_structure_(gnames=gnames,in_str=_getgwd_(gnames))
+    t_struct = _build_path_structure_(global_names=global_names,in_str=_getgwd_(global_names))
   full_name = os.path.join(*t_struct)
   return {'full_name':full_name, 'path_array':in_struct}
-def _traverse_structure_list_(gnames=None, in_struct=None):
+def _traverse_structure_list_(global_names=None, in_struct=None):
   '''
   Traverses a structure of folders to the last one and returns the information on the last element of the lsit
 
   Parameters:
   ===========
-  gnames - the object with the global names
+  global_names - the object with the global names
   in_struct:  The array with the list of directories that ends in a directory or file (as appropriate)
 
   Result:
@@ -233,11 +251,11 @@ def _traverse_structure_list_(gnames=None, in_struct=None):
   A dictionary with the full name and the information from the search
 
   '''
-  assert gnames is not None
+  assert global_names is not None
   assert in_struct is not None
   if (not in_struct) or (in_struct[0] != 'root'):
     raise FileNotFoundError('_traverse_struct_list_ expects a path array starting at root ' + pformat(in_struct))
-  myDrive = gnames.myDrive
+  myDrive = global_names.myDrive
   file_id = 'root'
   file_path = []
   file_path.append(file_id)
