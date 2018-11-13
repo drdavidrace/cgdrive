@@ -1,5 +1,5 @@
 '''
-Object to support common informational messages
+Object to support common informational messages and common file names
 '''
 import os, sys
 from pprint import pprint, pformat
@@ -7,6 +7,7 @@ from pprint import pprint, pformat
 import utilities.file_utilities as flu
 #
 class names:
+  
   def __init__(self):
     self.source_path = os.path.split(flu.clean_path(sys.argv[0]))[0]
     self.current_pid = os.getpid()
@@ -21,6 +22,8 @@ class names:
     self.session_file_name = "session" #session information
     self.max_lock_retries = 1
     self.max_session_time = 180 #minutes
+    self.authentication = None
+    self.myDrive = None
     self.info_file_dir()
   #Get for common names
   def info_dir_name(self):
@@ -30,6 +33,9 @@ class names:
   def process_lock_file(self):
     return flu.create_process_lockfile_name(
       self.info_file_dir(), self.process_lock_name, self.current_pid, create_dir=True)
+  def glob_lock_file(self):
+    return flu.create_process_lockfile_name(
+    self.info_file_dir(), self.process_lock_name, '*', create_dir=True)
   def cred_file(self):
     return flu.create_file_name(self.info_file_dir(),self.cred_file_name, create_dir=True)
   def global_lock_file(self):
@@ -40,6 +46,8 @@ class names:
     return flu.create_file_name(self.info_file_dir(), self.gwd_file_name, create_dir=True)
   def client_secrets_file(self):
     return flu.create_file_name(self.source_path, self.client_secrets_name)
+  #Common values
+
   #messages
   def _info_dir_m_(self):
     return "Information Directory is {:s}".format(self.info_file_dir())

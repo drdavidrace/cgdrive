@@ -27,6 +27,7 @@ import utilities.global_names as gn
 import utilities.lock_mgmt as lm
 import utilities.authentication_mgmt as am
 import commands.arg_parse as ap
+import commands.gwd_mgmt as gm
 import commands.command_mgr as cmgr
 #defaults
 gnames = gn.names()
@@ -38,7 +39,8 @@ if __name__ == "__main__":
   '''
   This is the main driver for cgdrive.
   '''
-  am.check_authentication(gnames.cred_file())
+  thisAuthentication = am.check_authentication(gnames.cred_file())
+  gnames.authentication = thisAuthentication
 
   a_parser = argparse.ArgumentParser(
     description='Manage the data transfer between the local VM and a Google Drive',
@@ -55,15 +57,15 @@ if __name__ == "__main__":
   )
   args = a_parser.parse_args()
   #Get the process lock
-  process_lock_status = lm.get_process_lock(gnames=gnames,verbose=True)
+  process_lock_status = lm.get_process_lock(gnames=gnames,verbose=False)
+  #At this point we assume that there is a subcommand and action; therefore,
+  #this is the starting point for wrapping the lock
   if process_lock_status:
+
     if(args.subcommand is None):
       a_parser.print_help()
       print("There must be a subcommand, exitting!")
     else:
-      #At this point we assume that there is a subcommand and action; therefore,
-      #this is the starting point for wrapping the lock
-
       subcommand = args.subcommand
       action = args.action
       verbose = args.verbose
@@ -76,10 +78,9 @@ if __name__ == "__main__":
         print("Valid Command ? {}".format(valid_command))
         print("Command Status {}".format(scommand))
         print("Action Status {}".format(saction))
-
       if valid_command:
         found_valid, command_status = cmgr.exe(
           subcommand = scommand, action=saction,
           g_names = gnames, verbose=verbose)
   #remove lock
-  lm.release_process_lock(gnames=gnames)
+  lm.release_process_lock(gnames=gnames,verbose=False)

@@ -59,6 +59,10 @@ def _find_action_(subcommand=None, action=None, verbose=False):
   if valid_command:
     if subcommand == cc.sess_command:
       pactions = cc.sess_acts
+    elif subcommand == cc.gwd_command:
+      pactions = cc.gwd_acts
+    else:
+      return found_valid, saction
   else:
     return found_valid, saction
   #

@@ -1,5 +1,7 @@
 import os
+import glob
 from pprint import pprint
+import utilities.file_utilities as flu
 import time
 #Get the application lock
 def get_process_lock(
@@ -67,5 +69,9 @@ def release_process_lock(
         pprint(process_lock_file)
         pprint(global_lock_file)
     os.unlink(global_lock_file)
-    os.remove(process_lock_file)
+    p_lock_file=flu.create_process_lockfile_name(
+        dir_name=gnames.info_dir_name(), file_name=gnames.process_lock_name, 
+        pid='*', create_dir=False)
+    for f in glob.glob(p_lock_file):
+        os.remove(f)
     return True

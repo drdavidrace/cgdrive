@@ -77,15 +77,18 @@ def create_process_lockfile_name(dir_name=None, file_name=None, pid=None, create
     assert dir_name is not None
     assert file_name is not None
     assert pid is not None
-    assert pid > 0
     assert isinstance(dir_name,str)
     assert isinstance(file_name,str)
-    assert isinstance(pid, int)
 
     dir_name = clean_path(dir_name)
     file_name = file_name.strip()
-
-    file_name = clean_path(os.path.join(dir_name, ''.join(["{:d}-".format(pid),file_name])))
+    if isinstance(pid,int):
+        file_name = clean_path(os.path.join(dir_name, ''.join(["{:d}-".format(pid),file_name])))
+    elif isinstance(pid,str):
+        pid = pid.strip()
+        file_name = clean_path(os.path.join(dir_name, ''.join(["{:s}-".format(pid),file_name])))
+    else:
+        raise TypeError("Bad type: {}".format(pid))
     full_path = clean_path(file_name)
     if not create_dir:
         return full_path

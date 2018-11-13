@@ -6,6 +6,7 @@ import utilities.file_utilities as flu
 import utilities.lock_mgmt as lm
 import utilities.authentication_mgmt as am
 import commands.session_mgmt as sm
+import commands.gwd_mgmt as gm
 import commands.arg_parse as ap
 import commands.command_const as cc
 from pprint import pprint
@@ -44,6 +45,9 @@ def exe(
     if scommand == cc.sess_command:
       command_success = _sess_exe_(action=saction, global_names=g_names,
       verbose=verbose)
+    elif scommand == cc.gwd_command:
+      command_success = _gwd_exe_(action=saction, global_names=g_names,
+      verbose=verbose)
     else:
       command_success = False
   else:
@@ -53,6 +57,18 @@ def exe(
 #  session command execution
 #
 def _sess_exe_(action=None, global_names=None, verbose=False):
+  '''
+  Purpose:  Execute the session commands
+
+  Inputs:  
+  Action is the action to perform
+
+  global_names is the global object that contains the names and other items
+
+  Outputs:
+  Status of the requested action
+  '''
+  assert global_names is not None
   session_file = global_names.session_file()
   max_time = global_names.max_session_time
   cred_file = global_names.cred_file()
@@ -91,6 +107,28 @@ def _sess_exe_(action=None, global_names=None, verbose=False):
       )
   elif action == 'PR':
     command_success = sm.print_session_information(global_names=global_names)
+  else:
+    command_success = False
+  return command_success
+#
+def _gwd_exe_(action=None, global_names=None, verbose=False):
+  '''
+  Purpose:  Execute the gwd command
+
+  Inputs:
+  action is the gwd action to perform
+
+  global_names is the object that contains the global names and other important information
+
+  Outputs:
+  status of the requested action
+  '''
+  assert global_names is not None
+  assert isinstance(action, str)
+  command_success = False
+  if action == 'GE':
+    command_success = gm.getgwd(gnames=global_names, verbose=verbose)
+    pprint(command_success)
   else:
     command_success = False
   return command_success
