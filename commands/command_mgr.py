@@ -127,7 +127,7 @@ def _gwd_exe_(action=None, global_names=None, verbose=False):
   assert isinstance(action, str)
   command_success = False
   if action == 'GE':
-    command_success = gm.getgwd(gnames=global_names, verbose=verbose)
+    command_success = gm.getgwd(global_names=global_names, verbose=verbose)
     pprint(command_success)
   else:
     command_success = False
