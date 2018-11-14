@@ -36,8 +36,8 @@ def getgwd(global_names=None,verbose=False):
   file_info = _get_file_metadata_(global_names=global_names,file_str=gwd_name)
   if verbose:
     pprint(file_info)
-  return file_info['full_name'], file_info['id']
-def cd(global_names=None, new_dir=None, verbose=False):
+  return file_info
+def chdir(global_names=None, new_dir=None, verbose=False):
   '''
   Purpose:  Change the google working directory
 
@@ -52,10 +52,38 @@ def cd(global_names=None, new_dir=None, verbose=False):
   Outputs:
   The full path of the new working directory is written to ~/.gdrive/gwd
   '''
+  assert global_names is not None
+  if new_dir == '' or new_dir is None:
+    new_dir = 'root'
+  if _isdir_(global_names=global_names, dir_name=new_dir):
+    work_file_info = _ls_(name)
+    if(len(work_file_info['file_result']) == 1 and 'folder' in work_file_info['file_result'][0]['mimeType']):
+      self.cur_dir = work_file_info['full_name']
+    elif work_file_info['full_name'] == 'root':
+      self.cur_dir = work_file_info['full_name']
+  return self.getcwd()
   return_value = False
   return return_value
 #
 #  Private commands
+#
+def _isdir_(global_names=None, dir_name=None, verbose=False):
+  '''
+  Test if a string is a file name
+  Parameters:
+  ===========
+  in_str:  The path name for a directory of interest
+  Results:
+  ========
+  True is a file
+  False otherwise
+  '''
+  ret_val = False
+  f_info = _get_file_metadata_(global_names=global_names, file_str=dir_name)
+  if f_info['mimeType']:
+    if 'folder' in f_info['mimeType']:
+      ret_val = True
+  return ret_val
 #
 def  _is_connected_(global_names=None):
   '''
@@ -105,12 +133,14 @@ def _get_file_metadata_(global_names=None, file_str=None):
   '''
   assert global_names is not None
   assert file_str is not None
-  myDrive = global_names.myDrive
   ret_val = None
   file_info = _find_file_id_(global_names=global_names,file_str=file_str)
   if file_info:
-    #drive_file = myDrive.CreateFile({'id': '{:s}'.format(file_info['id'])})
-    ret_val = file_info
+    drive_file = global_names.myDrive.CreateFile({'id': '{:s}'.format(file_info['id'])})
+    if file_info['id'] == 'root':
+      ret_val =  file_info
+    else:
+      ret_val = drive_file.FetchMetadata(fetch_all=True)
   return ret_val
 def _get_drive_(global_names=None, verbose=True):
   '''
@@ -283,7 +313,7 @@ def _traverse_structure_list_(global_names=None, in_struct=None):
           t_dict = {"title" : file_name, "id":  file_id, 'mimeType':file_type}
           try:
             t_dict['fileSize'] = file_info['fileSize']
-          except KeyError as e:
+          except KeyError:
             pass
           file_result.append(t_dict)
         if len(file_list) == 1:
